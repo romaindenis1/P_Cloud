@@ -1,0 +1,66 @@
+# This workflow will do a clean installation of node dependencies, cache/restore them, build the source code and run tests across different versions of node
+# For more information see: https://docs.github.com/en/actions/automating-builds-and-tests/building-and-testing-nodejs
+
+name: Node.js CI
+
+on:
+  push:
+    branches: ["main"]
+  pull_request:
+    branches: ["main"]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    strategy:
+      matrix:
+        node-version: [22.x]
+
+    steps:
+      - uses: actions/checkout@v4
+      - name: Use Node.js ${{ matrix.node-version }}
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node-version }}
+          cache: "npm"
+          cache-dependency-path: app/package-lock.json
+      - run: npm ci
+        working-directory: app # Définit le bon répertoire
+
+      - name: Install Docker Compose
+        run: sudo apt-get update && sudo apt-get install -y docker-compose
+
+      - run: docker-compose up -d
+        working-directory: app
+
+      # Attendre que MySQL soit complètement prêt
+      - name: Wait for MySQL to be fully ready
+        run: |
+          echo "Waiting for MySQL full readiness..."
+          until docker exec db mysql -udb_user -pdb_user_pass -e "SELECT 1" > /dev/null 2>&1; do
+            sleep 2
+          done
+        working-directory: app
+
+      - name: Create database
+        run: |
+          echo "Creating database..."
+          docker exec db mysql -uroot -proot -e "CREATE DATABASE IF NOT EXISTS db_passionlecture;"
+        working-directory: app
+
+      # Démarrer l’application avec un délai
+      - name: Start application
+        run: |
+          echo "Waiting 10 seconds before starting app..."
+          sleep 10
+          npm start &
+        working-directory: app
+
+        # En cas d'échec, afficher les logs des containers
+      - if: failure()
+        run: docker-compose logs
+        working-directory: app
+
+      - run: npm test
+        working-directory: app
