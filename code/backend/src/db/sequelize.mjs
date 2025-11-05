@@ -9,7 +9,7 @@ import { NoteModel } from "../models/donnerModel.mjs";
 import bcrypt from "bcrypt";
 
 const sequelize = new Sequelize(
-  "db_passionlecture", // Nom de la DB qui doit exister
+  "passionlecture", // Nom de la DB qui doit exister
   "root", // Nom de l'utilisateur
   "root", // Mot de passe de l'utilisateur
   {
