@@ -20,6 +20,11 @@ export default {
         console.error('Error during login:', error)
       }
     },
+    msalLogin() {
+      // Redirect to backend MSAL login endpoint. Backend must mount /auth/msal/login.
+      // Using absolute backend URL so it works from the dev server.
+      window.location.href = 'http://localhost:3000/auth/msal/login'
+    },
   },
 }
 </script>
@@ -32,6 +37,7 @@ export default {
         <input type="password" v-model="user.password" placeholder="Mot de passe" required />
         <router-link to="/inscription">Pas encore inscrit ?</router-link>
         <button type="submit">Se connecter</button>
+        <button type="button" class="msal-button" @click="msalLogin">Se connecter avec Microsoft</button>
       </form>
     </div>
   </div>
@@ -108,5 +114,19 @@ export default {
 
 .connexion-form button:hover {
   background: #318d64;
+}
+
+.msal-button {
+  padding: 0.75rem;
+  background: #2f5bb7;
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  font-size: 1rem;
+  cursor: pointer;
+  margin-top: 0.75rem;
+}
+.msal-button:hover {
+  background: #254a9a;
 }
 </style>

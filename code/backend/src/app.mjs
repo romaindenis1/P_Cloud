@@ -7,6 +7,9 @@ import { sequelize, initDb, Book, Category } from "../src/db/sequelize.mjs";
 import { success } from "./routes/helper.mjs";
 import cors from "cors";
 import { privKey } from "./auth/privKey.mjs";
+import dotenv from "dotenv";
+import session from "express-session";
+import msalRouter from "./auth/msal.mjs";
 const __dirname = import.meta.dirname;
 
 const app = express();
@@ -26,6 +29,23 @@ app.set("view engine", "ejs");
 app.set("views", __dirname + "/views"); //indique le dossier ou sont les vues
 
 app.use(cookieParser());
+
+dotenv.config();
+
+// session middleware required for MSAL flows
+app.use(
+  session({
+    secret: process.env.SESSION_SECRET || "change-me",
+    resave: false,
+    saveUninitialized: false,
+    cookie: { secure: false },
+  })
+);
+
+// Mount MSAL routes only if enabled in env
+if (process.env.AZURE_AUTH_ENABLED === "true" || process.env.AZURE_AUTH_ENABLED === "1") {
+  app.use("/auth/msal", msalRouter);
+}
 
 app.use(
   "/api-docs",

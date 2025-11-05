@@ -6,6 +6,7 @@
   "main": "src/app.mjs",
   "scripts": {
     "start": "nodemon src/app.mjs",
+    "dev": "nodemon src/app.mjs",
     "test": "vitest run --pool=forks"
   },
   "author": "po77qxd",
@@ -13,6 +14,8 @@
   "dependencies": {
     "bcrypt": "^5.1.1",
     "cookie-parser": "^1.4.7",
+  "express-session": "^1.17.3",
+  "@azure/msal-node": "^2.10.0",
     "cors": "^2.8.5",
     "ejs": "^3.1.10",
     "express": "^4.21.2",
@@ -21,7 +24,8 @@
     "mysql2": "^3.12.0",
     "sequelize": "^6.37.5",
     "swagger-jsdoc": "^6.2.8",
-    "swagger-ui-express": "^5.0.1"
+    "swagger-ui-express": "^5.0.1",
+    "dotenv": "^16.3.1"
   },
   "devDependencies": {
     "nodemon": "^3.1.9",
