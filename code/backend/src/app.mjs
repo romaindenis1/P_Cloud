@@ -47,7 +47,7 @@ session({
   saveUninitialized: false,
   cookie: { secure: false },
 }));
-);
+
 
 // Mount MSAL routes only if enabled in env
 if (process.env.AZURE_AUTH_ENABLED === "true" || process.env.AZURE_AUTH_ENABLED === "1") {
