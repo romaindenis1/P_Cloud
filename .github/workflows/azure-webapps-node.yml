@@ -1,25 +1,26 @@
-name: Deploy Frontend and Backend to Azure
+name: Deploy Fullstack App to Azure App Service
 
 on:
   push:
     branches:
-      - master
-  pull_request:
-    types: [opened, synchronize, reopened, closed]
+      - main
 
 jobs:
   build-and-deploy:
     runs-on: ubuntu-latest
 
     steps:
+      # 1️⃣ Checkout repository
       - name: Checkout repository
         uses: actions/checkout@v4
 
+      # 2️⃣ Set up Node.js
       - name: Set up Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: "24.11.0" 
+          node-version: "18"
 
+      # 3️⃣ Install and build frontend
       - name: Install frontend dependencies
         working-directory: ./code/frontend
         run: npm install
@@ -27,25 +28,23 @@ jobs:
       - name: Build frontend
         working-directory: ./code/frontend
         run: npm run build
+
+      # 4️⃣ Install backend dependencies
       - name: Install backend dependencies
         working-directory: ./code/backend
         run: npm install
 
-      - name: Build backend (if applicable)
-        working-directory: ./code/backend
-        run: npm run build --if-present
+      # 5️⃣ Copy frontend build into backend/public
+      - name: Copy frontend build into backend public folder
+        run: |
+          rm -rf ./code/backend/public
+          mkdir -p ./code/backend/public
+          cp -r ./code/frontend/build/* ./code/backend/public/
 
-      - name: Deploy frontend to Azure Static Web App
-        uses: Azure/static-web-apps-deploy@v1
-        with:
-          azure_static_web_apps_api_token: ${{ secrets.AZURE_STATIC_WEB_APPS_TOKEN }}
-          action: "upload"
-          app_location: "code/frontend"
-          output_location: "build"
-
-      - name: Deploy backend to Azure Web App
+      # 6️⃣ Deploy to Azure App Service using publish profile
+      - name: Deploy app to Azure App Service
         uses: azure/webapps-deploy@v3
         with:
-          app-name: "passion_lecture"
+          app-name: "passion-lecture-back"   # 👈 your App Service name
           publish-profile: ${{ secrets.AZURE_WEBAPP_PUBLISH_PROFILE }}
           package: "code/backend"
