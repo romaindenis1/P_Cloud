@@ -1,0 +1,55 @@
+name: Deploy Frontend and Backend to Azure
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      # Checkout repository
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      # Set up Node.js
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18' # adjust to your version
+
+      # Install and build frontend
+      - name: Install frontend dependencies
+        working-directory: ./code/frontend
+        run: npm install
+
+      - name: Build frontend
+        working-directory: ./code/frontend
+        run: npm run build
+
+      # Install and build backend
+      - name: Install backend dependencies
+        working-directory: ./code/backend
+        run: npm install
+
+      - name: Build backend (if needed)
+        working-directory: ./code/backend
+        run: npm run build --if-present
+
+      # Deploy frontend (for example, Azure Static Web App)
+      - name: Deploy frontend to Azure Static Web App
+        uses: Azure/static-web-apps-deploy@v1
+        with:
+          azure_static_web_apps_api_token: ${{ secrets.AZURE_STATIC_WEB_APPS_TOKEN }}
+          app_location: "code/frontend"
+          output_location: "build"
+
+      # Deploy backend (for example, Azure Web App)
+      - name: Deploy backend to Azure Web App
+        uses: azure/webapps-deploy@v3
+        with:
+          app-name: "<YOUR_BACKEND_APP_NAME>"
+          publish-profile: ${{ secrets.AZURE_WEBAPP_PUBLISH_PROFILE }}
+          package: "code/backend"
