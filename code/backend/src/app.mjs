@@ -46,7 +46,7 @@ session({
   resave: false,
   saveUninitialized: false,
   cookie: { secure: false },
-});
+}));
 );
 
 // Mount MSAL routes only if enabled in env
