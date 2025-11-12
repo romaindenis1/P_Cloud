@@ -12,9 +12,9 @@ import session from "express-session";
 import msalRouter from "./auth/msal.mjs";
 import path from "path";
 import { fileURLToPath } from "url";
-
-const __dirname = import.meta.dirname;
+dotenv.config();
 const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 const app = express();
 
 app.use(express.static(path.join(__dirname, "public")));
@@ -38,7 +38,7 @@ app.set("views", __dirname + "/views"); //indique le dossier ou sont les vues
 
 app.use(cookieParser());
 
-dotenv.config();
+
 
 // session middleware required for MSAL flows
 app.use(
@@ -74,7 +74,6 @@ app.get("/", (req, res) => {
       res.status(500).json({ message, data: error });
     });
 });
-app.use(express.static(__dirname + "/public"));
 
 app.get("/api/auth/check", (req, res) => {
   const token = req.cookies.passionLecture;
@@ -115,10 +114,10 @@ app.use("/uploads", express.static(UPLOADS_DIR));
 
 // Si aucune route ne correspondant à l'URL demandée par le consommateur
 // On place le code a la fin, car la requette passera d'abord par les autres route, et si aucune ne correspond la route n'est pas trouvé donc 404
-app.use(({ res }) => {
+app.use((req, res) => {
   const message =
     "Impossible de trouver la ressource demandée ! Vous pouvez essayer une autre URL.";
-  res.status(404).json(message);
+  res.status(404).json({ message });
 });
 
 app.listen(port, () => {
