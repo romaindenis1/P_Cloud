@@ -27,7 +27,7 @@
     "swagger-ui-express": "^5.0.1",
     "dotenv": "^16.3.1"
   },
-  "devDependencies": {
+  "dependencies": {
     "nodemon": "^3.1.9",
     "vitest": "^3.0.7"
   }
