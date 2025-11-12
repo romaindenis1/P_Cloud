@@ -10,21 +10,28 @@ import { privKey } from "./auth/privKey.mjs";
 import dotenv from "dotenv";
 import session from "express-session";
 import msalRouter from "./auth/msal.mjs";
-const __dirname = import.meta.dirname;
+import path from "path";
+import { fileURLToPath } from "url";
 
+const __dirname = import.meta.dirname;
+const __filename = fileURLToPath(import.meta.url);
+
+app.use(express.static(path.join(__dirname, "public")));
+
+app.get("*", (req, res, next) => {
+  if (req.path.startsWith("/api")) return next();
+  res.sendFile(path.join(__dirname, "public", "index.html"));
+});
 const app = express();
-const port = 3000;
+const port =  process.env.PORT || 3000;
 
 //le middleware express.json() pour analyser le corps des requêtes JSON.
 app.use(express.json());
 
-app.use(
-  cors({
-    origin: "http://localhost:5173",
-    credentials: true,
-  })
-);
-
+app.use(cors({
+  origin: process.env.FRONTEND_URL || "http://localhost:5173",
+  credentials: true,
+}));
 app.set("view engine", "ejs");
 app.set("views", __dirname + "/views"); //indique le dossier ou sont les vues
 
@@ -34,12 +41,12 @@ dotenv.config();
 
 // session middleware required for MSAL flows
 app.use(
-  session({
-    secret: process.env.SESSION_SECRET || "change-me",
-    resave: false,
-    saveUninitialized: false,
-    cookie: { secure: false },
-  })
+session({
+  secret: process.env.SESSION_SECRET || "change-me",
+  resave: false,
+  saveUninitialized: false,
+  cookie: { secure: false },
+});
 );
 
 // Mount MSAL routes only if enabled in env
@@ -67,10 +74,6 @@ app.get("/", (req, res) => {
     });
 });
 app.use(express.static(__dirname + "/public"));
-//redirect /api vers localhost/
-app.get("/api/", (req, res) => {
-  res.redirect(`http://localhost:${port}/`);
-});
 
 app.get("/api/auth/check", (req, res) => {
   const token = req.cookies.passionLecture;
