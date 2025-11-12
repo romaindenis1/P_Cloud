@@ -4,23 +4,22 @@ on:
   push:
     branches:
       - master
+  pull_request:
+    types: [opened, synchronize, reopened, closed]
 
 jobs:
   build-and-deploy:
     runs-on: ubuntu-latest
 
     steps:
-      # Checkout repository
-      - name: Checkout code
+      - name: Checkout repository
         uses: actions/checkout@v4
 
-      # Set up Node.js
       - name: Set up Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '18' # adjust to your version
+          node-version: "24.11.0" # Adjust if needed
 
-      # Install and build frontend
       - name: Install frontend dependencies
         working-directory: ./code/frontend
         run: npm install
@@ -28,28 +27,25 @@ jobs:
       - name: Build frontend
         working-directory: ./code/frontend
         run: npm run build
-
-      # Install and build backend
       - name: Install backend dependencies
         working-directory: ./code/backend
         run: npm install
 
-      - name: Build backend (if needed)
+      - name: Build backend (if applicable)
         working-directory: ./code/backend
         run: npm run build --if-present
 
-      # Deploy frontend (for example, Azure Static Web App)
       - name: Deploy frontend to Azure Static Web App
         uses: Azure/static-web-apps-deploy@v1
         with:
           azure_static_web_apps_api_token: ${{ secrets.AZURE_STATIC_WEB_APPS_TOKEN }}
+          action: "upload"
           app_location: "code/frontend"
           output_location: "build"
 
-      # Deploy backend (for example, Azure Web App)
       - name: Deploy backend to Azure Web App
         uses: azure/webapps-deploy@v3
         with:
-          app-name: "<YOUR_BACKEND_APP_NAME>"
+          app-name: "<YOUR_BACKEND_APP_NAME>" # 👈 replace this with your Azure Web App name
           publish-profile: ${{ secrets.AZURE_WEBAPP_PUBLISH_PROFILE }}
           package: "code/backend"
