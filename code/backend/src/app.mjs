@@ -15,6 +15,7 @@ import { fileURLToPath } from "url";
 
 const __dirname = import.meta.dirname;
 const __filename = fileURLToPath(import.meta.url);
+const app = express();
 
 app.use(express.static(path.join(__dirname, "public")));
 
@@ -22,7 +23,7 @@ app.get("*", (req, res, next) => {
   if (req.path.startsWith("/api")) return next();
   res.sendFile(path.join(__dirname, "public", "index.html"));
 });
-const app = express();
+
 const port =  process.env.PORT || 3000;
 
 //le middleware express.json() pour analyser le corps des requêtes JSON.
