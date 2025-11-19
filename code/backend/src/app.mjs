@@ -3,7 +3,8 @@ import swaggerUi from "swagger-ui-express";
 import { swaggerSpec } from "./swagger.mjs";
 import cookieParser from "cookie-parser";
 import jwt from "jsonwebtoken";
-import { sequelize, initDb, Book, Category } from "../src/db/sequelize.mjs";
+import { sequelize, initDb, Book, Category, dbInfo } from "../src/db/sequelize.mjs";
+import mysqlPool from "./db/mysqlClient.mjs";
 import { success } from "./routes/helper.mjs";
 import cors from "cors";
 import { privKey } from "./auth/privKey.mjs";
@@ -86,6 +87,28 @@ app.get("/api/auth/check", (req, res) => {
     res.status(200).json({ user });
   } catch (err) {
     res.sendStatus(401); // Invalid token
+  }
+});
+
+// DB status endpoint (no secrets)
+app.get('/api/db/status', async (req, res) => {
+  try {
+    const poolStatus = {};
+    // try a lightweight query using mysql pool if configured
+    try {
+      const [rows] = await mysqlPool.query('SELECT 1 AS ok');
+      poolStatus.ok = true;
+    } catch (e) {
+      poolStatus.ok = false;
+      poolStatus.error = e.message;
+    }
+
+    res.json({
+      dbInfo: dbInfo || { type: 'unknown' },
+      pool: poolStatus,
+    });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
   }
 });
 

@@ -84,12 +84,20 @@ if (!azureConn && process.env.DB_REMOTE_HOST) {
 }
 
 let sequelize;
+let dbInfo = null;
 
 // Try remote (Azure) first if we detected a remote connection definition
 if (azureConn && azureConn.host) {
   const remoteHost = azureConn.host;
   const remotePort = azureConn.port || 3306;
   const dbName = azureConn.database || DEFAULT_DB_NAME;
+  // Ensure a database name is explicitly provided when connecting to a shared DB server
+  if (!dbName) {
+    const msg =
+      "Remote DB detected but no database name provided. Set DB_NAME env var or include the database in DATABASE_URL / MYSQLCONNSTR_.";
+    console.error(msg);
+    throw new Error(msg);
+  }
   const dbUser = azureConn.user || DEFAULT_DB_USER;
   const dbPassword = azureConn.password || DEFAULT_DB_PASSWORD;
 
@@ -107,6 +115,14 @@ if (azureConn && azureConn.host) {
     await remote.authenticate();
     console.log(`Connected to remote DB ${remoteHost}:${remotePort}`);
     sequelize = remote;
+    dbInfo = {
+      type: "remote",
+      host: remoteHost,
+      port: remotePort,
+      database: dbName,
+      user: dbUser,
+      ssl: true,
+    };
   } catch (err) {
     console.warn(
       `Remote DB connection to ${remoteHost}:${remotePort} failed, falling back to local DB.`,
@@ -126,6 +142,14 @@ if (!sequelize) {
   try {
     await sequelize.authenticate();
     console.log(`Connected to local DB ${LOCAL_HOST}:${LOCAL_PORT}`);
+    dbInfo = {
+      type: "local",
+      host: LOCAL_HOST,
+      port: LOCAL_PORT,
+      database: DEFAULT_DB_NAME,
+      user: DEFAULT_DB_USER,
+      ssl: false,
+    };
   } catch (localErr) {
     console.error("Local DB connection failed:", localErr.message || localErr);
     // rethrow so callers know initialization failed
@@ -271,4 +295,5 @@ export {
   Category,
   Comment,
   Note,
+  dbInfo,
 };
