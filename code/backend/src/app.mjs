@@ -3,44 +3,54 @@ import swaggerUi from "swagger-ui-express";
 import { swaggerSpec } from "./swagger.mjs";
 import cookieParser from "cookie-parser";
 import jwt from "jsonwebtoken";
-import { sequelize, initDb, Book, Category } from "../src/db/sequelize.mjs";
+import { sequelize, initDb, Book, Category, dbInfo } from "../src/db/sequelize.mjs";
+import mysqlPool from "./db/mysqlClient.mjs";
 import { success } from "./routes/helper.mjs";
 import cors from "cors";
 import { privKey } from "./auth/privKey.mjs";
 import dotenv from "dotenv";
 import session from "express-session";
 import msalRouter from "./auth/msal.mjs";
-const __dirname = import.meta.dirname;
+import path from "path";
+import { fileURLToPath } from "url";
+dotenv.config();
 
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 const app = express();
-const port = 3000;
+
+app.use(express.static(path.join(__dirname, "public")));
+
+app.get("*", (req, res, next) => {
+  if (req.path.startsWith("/api")) return next();
+  res.sendFile(path.join(__dirname, "public", "index.html"));
+});
+
+const port =  process.env.PORT || 3000;
 
 //le middleware express.json() pour analyser le corps des requêtes JSON.
 app.use(express.json());
 
-app.use(
-  cors({
-    origin: "http://localhost:5173",
-    credentials: true,
-  })
-);
-
+app.use(cors({
+  origin: process.env.FRONTEND_URL || "http://localhost:5173",
+  credentials: true,
+}));
 app.set("view engine", "ejs");
 app.set("views", __dirname + "/views"); //indique le dossier ou sont les vues
 
 app.use(cookieParser());
 
-dotenv.config();
+
 
 // session middleware required for MSAL flows
 app.use(
-  session({
-    secret: process.env.SESSION_SECRET || "change-me",
-    resave: false,
-    saveUninitialized: false,
-    cookie: { secure: false },
-  })
-);
+session({
+  secret: process.env.SESSION_SECRET || "change-me",
+  resave: false,
+  saveUninitialized: false,
+  cookie: { secure: false },
+}));
+
 
 // Mount MSAL routes only if enabled in env
 if (process.env.AZURE_AUTH_ENABLED === "true" || process.env.AZURE_AUTH_ENABLED === "1") {
@@ -66,11 +76,6 @@ app.get("/", (req, res) => {
       res.status(500).json({ message, data: error });
     });
 });
-app.use(express.static(__dirname + "/public"));
-//redirect /api vers localhost/
-app.get("/api/", (req, res) => {
-  res.redirect(`http://localhost:${port}/`);
-});
 
 app.get("/api/auth/check", (req, res) => {
   const token = req.cookies.passionLecture;
@@ -82,6 +87,28 @@ app.get("/api/auth/check", (req, res) => {
     res.status(200).json({ user });
   } catch (err) {
     res.sendStatus(401); // Invalid token
+  }
+});
+
+// DB status endpoint (no secrets)
+app.get('/api/db/status', async (req, res) => {
+  try {
+    const poolStatus = {};
+    // try a lightweight query using mysql pool if configured
+    try {
+      const [rows] = await mysqlPool.query('SELECT 1 AS ok');
+      poolStatus.ok = true;
+    } catch (e) {
+      poolStatus.ok = false;
+      poolStatus.error = e.message;
+    }
+
+    res.json({
+      dbInfo: dbInfo || { type: 'unknown' },
+      pool: poolStatus,
+    });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
   }
 });
 
@@ -111,10 +138,10 @@ app.use("/uploads", express.static(UPLOADS_DIR));
 
 // Si aucune route ne correspondant à l'URL demandée par le consommateur
 // On place le code a la fin, car la requette passera d'abord par les autres route, et si aucune ne correspond la route n'est pas trouvé donc 404
-app.use(({ res }) => {
+app.use((req, res) => {
   const message =
     "Impossible de trouver la ressource demandée ! Vous pouvez essayer une autre URL.";
-  res.status(404).json(message);
+  res.status(404).json({ message });
 });
 
 app.listen(port, () => {

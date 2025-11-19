@@ -1,0 +1,49 @@
+name: Deploy Vue + Express to Azure App Service
+
+on:
+  push:
+    branches:
+      - master
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      # 1️⃣ Checkout the repository
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      # 2️⃣ Set up Node.js
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "18"
+
+      # 3️⃣ Install frontend dependencies and build Vue app
+      - name: Install frontend dependencies
+        working-directory: ./code/frontend
+        run: npm install
+
+      - name: Build frontend
+        working-directory: ./code/frontend
+        run: npm run build
+
+      # 4️⃣ Copy Vue build output into backend's public folder
+      - name: Copy frontend build into backend public folder
+        run: |
+          mkdir -p ./code/backend/src/public
+          cp -r ./code/frontend/dist/* ./code/backend/src/public/
+
+      # 5️⃣ Install backend dependencies
+      - name: Install backend dependencies
+        working-directory: ./code/backend
+        run: npm install
+
+      # 6️⃣ Deploy backend (with frontend inside) to Azure App Service
+      - name: Deploy app to Azure App Service
+        uses: azure/webapps-deploy@v3
+        with:
+          app-name: "passion-lecture-romrom"       
+          publish-profile: ${{ secrets.AZURE_WEBAPP_PUBLISH_PROFILE }}
+          package: "code/backend"

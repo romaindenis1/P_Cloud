@@ -5,7 +5,7 @@
   "description": "module 295 - projet passion lecture",
   "main": "src/app.mjs",
   "scripts": {
-    "start": "nodemon src/app.mjs",
+    "start": "node src/app.mjs",
     "dev": "nodemon src/app.mjs",
     "test": "vitest run --pool=forks"
   },
