@@ -4,9 +4,9 @@ import dotenv from 'dotenv';
 dotenv.config();
 
 const host = process.env.DB_REMOTE_HOST || process.env.DB_HOST || 'cmid3b-srv-db.mysql.database.azure.com';
-const user = process.env.DB_USER || 'cmi3badmin';
+const user = process.env.DB_USER || 'romrom';
 const password = process.env.DB_PASSWORD || '';
-const database = process.env.DB_NAME || process.env.DATABASE_NAME || '';
+const database = process.env.DB_NAME || process.env.DATABASE_NAME || 'db_romrom';
 
 if (!database) {
   throw new Error(
