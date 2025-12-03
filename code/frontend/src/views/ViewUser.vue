@@ -57,7 +57,7 @@ onMounted(async () => {
     <div class="book-categorie">
       <div v-for="book in userBooks" :key="book.livre_id" class="book">
         <div v-if="userBooks.length > 0">
-          <img :src="`${location.origin}/${book._imageCouverture}`" />
+          <img :src="'/' + book._imageCouverture" />
 
           <RouterLink
             :to="{ name: 'bookDetail', params: { id: book.livre_id } }"

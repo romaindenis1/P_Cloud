@@ -69,6 +69,11 @@ const handleLogout = async () => {
         <li>Samuel Sallaku (samuel.sallaku@eduvaud.ch)</li>
         <li>Romain Schertenleib (romain.schertenleib@eduvaud.ch)</li>
       </ul>
+      <p><strong>Mis en production par</strong></p>
+      <ul>
+        <li>Romain Denis (romain.denis@eduvaud.ch)</li>
+        <li>Romain Schertenleib (romain.schertenleib@eduvaud.ch)</li>
+      </ul>
     </footer>
   </div>
 </template>

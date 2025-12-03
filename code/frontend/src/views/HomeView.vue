@@ -31,11 +31,8 @@ onMounted(() => {
         :key="book.livre_id"
         :to="{ name: 'bookDetail', params: { id: book.livre_id } }"
       >
-        <img
-          v-if="book._imageCouverture != null"
-          :src="`${location.origin}/${book._imageCouverture}`"
-        />
-        <img v-else :src="`${location.origin}/uploads/default.png`" />
+        <img v-if="book._imageCouverture != null" :src="'/' + book._imageCouverture" />
+        <img v-else :src="'/uploads/default.png'" />
         <p class="book-title">{{ book.titre }}</p>
       </RouterLink>
     </div>
