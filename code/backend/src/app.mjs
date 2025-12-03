@@ -21,10 +21,7 @@ const app = express();
 
 app.use(express.static(path.join(__dirname, "public")));
 
-app.get("*", (req, res, next) => {
-  if (req.path.startsWith("/api")) return next();
-  res.sendFile(path.join(__dirname, "public", "index.html"));
-});
+
 
 const port =  process.env.PORT || 3000;
 
@@ -136,6 +133,19 @@ app.use("/api/editors", editorRouter);
 const UPLOADS_DIR = __dirname + "/uploads";
 app.use("/uploads", express.static(UPLOADS_DIR));
 
+// Serve single-page app for non-API routes (only after API routes are mounted)
+app.get("*", (req, res, next) => {
+  if (req.path.startsWith("/api")) return next();
+  const indexPath = path.join(__dirname, "public", "index.html");
+  return res.sendFile(indexPath, (err) => {
+    if (err) {
+      console.error(`Failed to send index.html : ${err.message}`);
+      // If the file doesn't exist, return a helpful message
+      res.status(404).send('Frontend not built or index.html missing on server.');
+    }
+  });
+});
+
 // Si aucune route ne correspondant à l'URL demandée par le consommateur
 // On place le code a la fin, car la requette passera d'abord par les autres route, et si aucune ne correspond la route n'est pas trouvé donc 404
 app.use((req, res) => {
@@ -144,8 +154,8 @@ app.use((req, res) => {
   res.status(404).json({ message });
 });
 
-app.listen(port, () => {
-  console.log(`Example app listening on port http://localhost:${port}`);
+app.listen(port, '0.0.0.0', () => {
+  console.log(`Example app listening on port http://0.0.0.0:${port}`);
 });
 
 sequelize
