@@ -29,7 +29,9 @@ const port =  process.env.PORT || 3000;
 app.use(express.json());
 
 app.use(cors({
-  origin: process.env.FRONTEND_URL || "http://localhost:5173",
+  // Use explicit FRONTEND_URL when provided; otherwise reflect request origin
+  // (allows credentials to work without hard-coding localhost).
+  origin: process.env.FRONTEND_URL || true,
   credentials: true,
 }));
 app.set("view engine", "ejs");
