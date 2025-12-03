@@ -9,7 +9,8 @@ const options = {
     },
     servers: [
       {
-        url: "http://localhost:3000",
+        // Use environment variable when available, otherwise assume same origin
+        url: process.env.SWAGGER_URL || '/',
       },
     ],
     components: {

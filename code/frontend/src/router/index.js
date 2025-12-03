@@ -65,14 +65,14 @@ const router = createRouter({
 })
 
 const apiClient = axios.create({
-  baseURL: 'http://localhost:3000/api/',
+  baseURL: '/api',
   withCredentials: true,
 })
 
 router.beforeEach(async (to, from, next) => {
   if (to.meta.requiresAuth) {
     try {
-      await apiClient.get('/auth/check')
+      await apiClient.get('auth/check')
       next()
     } catch (err) {
       next({ name: 'connexion' }) // redirect to login

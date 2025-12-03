@@ -77,9 +77,9 @@ async function deleteBook(id) {
               <RouterLink :to="{ name: 'bookDetail', params: { id: book.livre_id } }">
                 <img
                   v-if="book._imageCouverture != null"
-                  :src="'http://localhost:3000/' + book._imageCouverture"
+                  :src="`${location.origin}/${book._imageCouverture}`"
                 />
-                <img v-else :src="'http://localhost:3000/uploads/default.png'" />
+                <img v-else :src="`${location.origin}/uploads/default.png`" />
               </RouterLink>
               <RouterLink
                 :to="{ name: 'bookDetail', params: { id: book.livre_id } }"

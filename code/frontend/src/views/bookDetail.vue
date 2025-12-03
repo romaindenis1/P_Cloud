@@ -101,10 +101,10 @@ function submitComment() {
     <div class="card">
       <img
         v-if="book._imageCouverture != null"
-        :src="'http://localhost:3000/' + book._imageCouverture"
+        :src="`${location.origin}/${book._imageCouverture}`"
         class="cover"
       />
-      <img v-else :src="'http://localhost:3000/uploads/default.png'" class="cover" />
+      <img v-else :src="`${location.origin}/uploads/default.png`" class="cover" />
       <div class="info">
         <h1 class="title">{{ book.titre }}</h1>
         <p class="meta"><strong>Pages :</strong> {{ book.nbPages }}</p>

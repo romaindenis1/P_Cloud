@@ -22,8 +22,8 @@ export default {
     },
     msalLogin() {
       // Redirect to backend MSAL login endpoint. Backend must mount /auth/msal/login.
-      // Using absolute backend URL so it works from the dev server.
-      window.location.href = 'http://localhost:3000/auth/msal/login'
+      // Use the current origin so we don't hard-code localhost.
+      window.location.href = `${location.origin}/auth/msal/login`
     },
   },
 }

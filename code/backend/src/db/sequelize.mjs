@@ -16,7 +16,7 @@ const DEFAULT_DB_NAME = process.env.DB_NAME || "passionlecture";
 const DEFAULT_DB_USER = process.env.DB_USER || "root";
 const DEFAULT_DB_PASSWORD = process.env.DB_PASSWORD || "root";
 
-const LOCAL_HOST = process.env.DB_LOCAL_HOST || "localhost";
+const LOCAL_HOST = process.env.DB_LOCAL_HOST || "127.0.0.1";
 const LOCAL_PORT = parseInt(process.env.DB_LOCAL_PORT || "6034", 10);
 
 // Function to detect common Azure/MySQL connection environment variables and parse them
