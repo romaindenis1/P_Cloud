@@ -60,12 +60,16 @@ jobs:
           fi
 
           # MSAL / Azure AD settings (optional)
+          # Do NOT write client secrets or tenant IDs into the deployed package.
+          # We will set sensitive values as App Settings in Azure instead.
           echo "AZURE_AUTH_ENABLED=${{ secrets.AZURE_AUTH_ENABLED }}" >> ./code/backend/.env
-          echo "AZURE_CLIENT_ID=${{ secrets.AZURE_CLIENT_ID }}" >> ./code/backend/.env
-          echo "AZURE_CLIENT_SECRET=${{ secrets.AZURE_CLIENT_SECRET }}" >> ./code/backend/.env
-          echo "AZURE_TENANT_ID=${{ secrets.AZURE_TENANT_ID }}" >> ./code/backend/.env
-          echo "AZURE_REDIRECT_URI=${{ secrets.AZURE_REDIRECT_URI }}" >> ./code/backend/.env
-          echo "POST_LOGOUT_REDIRECT=${{ secrets.POST_LOGOUT_REDIRECT }}" >> ./code/backend/.env
+          # Optional non-secret redirect values can be written if provided
+          if [ -n "${{ secrets.AZURE_REDIRECT_URI }}" ]; then
+            echo "AZURE_REDIRECT_URI=${{ secrets.AZURE_REDIRECT_URI }}" >> ./code/backend/.env
+          fi
+          if [ -n "${{ secrets.POST_LOGOUT_REDIRECT }}" ]; then
+            echo "POST_LOGOUT_REDIRECT=${{ secrets.POST_LOGOUT_REDIRECT }}" >> ./code/backend/.env
+          fi
 
           # Session secret
           echo "SESSION_SECRET=${{ secrets.SESSION_SECRET }}" >> ./code/backend/.env
@@ -81,6 +85,31 @@ jobs:
       - name: Install backend dependencies
         working-directory: ./code/backend
         run: npm install
+
+      # 6️⃣ Configure Azure App Settings (don't store secrets in the package)
+      - name: Azure Login (for app settings)
+        if: ${{ secrets.AZURE_CREDENTIALS != '' }}
+        uses: azure/login@v1
+        with:
+          creds: ${{ secrets.AZURE_CREDENTIALS }}
+
+      - name: Set Azure App Settings (redirect URIs)
+        if: ${{ secrets.AZURE_CREDENTIALS != '' }}
+        shell: bash
+        run: |
+          echo "Locating resource group for webapp 'passion-lecture-romrom'..."
+          RG=$(az webapp list --query "[?name=='passion-lecture-romrom'] | [0].resourceGroup" -o tsv)
+          if [ -z "$RG" ]; then
+            echo "Could not determine resource group for webapp 'passion-lecture-romrom'" >&2
+            exit 1
+          fi
+          echo "Setting redirect URIs as App Settings..."
+          az webapp config appsettings set --resource-group "$RG" --name passion-lecture-romrom --settings \
+            AZURE_REDIRECT_URI="${{ secrets.AZURE_REDIRECT_URI }}" \
+            POST_LOGOUT_REDIRECT="${{ secrets.POST_LOGOUT_REDIRECT }}" \
+            AZURE_CLIENT_ID="${{ secrets.AZURE_CLIENT_ID }}" \
+            AZURE_TENANT_ID="${{ secrets.AZURE_TENANT_ID }}"
+          echo "App Settings updated. Do not store client secrets in files; set AZURE_CLIENT_SECRET as a secret in the portal or Key Vault."
 
       # 6️⃣ Deploy backend (with frontend inside) to Azure App Service
       - name: Deploy app to Azure App Service

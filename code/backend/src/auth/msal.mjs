@@ -20,22 +20,17 @@ process.env.AZURE_CLIENT_SECRET =
   process.env.AZURE_CLIENT_SECRET || "p9S8Q~OYwGjAI5-dQzuLOL8_t4127DLzFN.trbRe";
 process.env.AZURE_TENANT_ID =
   process.env.AZURE_TENANT_ID || "906ab908-04f9-4a80-ba9c-875a36e77bc1";
-// Provide safe defaults for redirect URIs so MSAL won't throw if they are
-// not set. For production, register the exact redirect URI in your
-// Azure AD app and set `AZURE_REDIRECT_URI`/`POST_LOGOUT_REDIRECT` in
-// App Settings or Key Vault instead of relying on these fallbacks.
-if (!process.env.AZURE_REDIRECT_URI) {
-  if (process.env.FRONTEND_URL) {
-    // ensure no trailing slash
-    const base = process.env.FRONTEND_URL.replace(/\/$/, "");
-    process.env.AZURE_REDIRECT_URI = `${base}/auth/msal/redirect`;
-  } else {
-    process.env.AZURE_REDIRECT_URI = "http://localhost:3000/auth/msal/redirect";
-  }
-}
+// Hardcode the precise redirect URIs for the deployed app. These must
+// exactly match the reply URLs registered in the Azure AD App
+// Registration. Change them here only if you intentionally want a
+// different redirect path.
+process.env.AZURE_REDIRECT_URI =
+  process.env.AZURE_REDIRECT_URI ||
+  "https://passion-lecture-romrom-g8bze5ddekfqghbq.switzerlandnorth-01.azurewebsites.net/auth/msal/redirect";
 
 process.env.POST_LOGOUT_REDIRECT =
-  process.env.POST_LOGOUT_REDIRECT || process.env.FRONTEND_URL || "/";
+  process.env.POST_LOGOUT_REDIRECT ||
+  "https://passion-lecture-romrom-g8bze5ddekfqghbq.switzerlandnorth-01.azurewebsites.net/";
 
 
 const AZURE_ENABLED =
