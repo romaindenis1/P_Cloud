@@ -1,0 +1,12 @@
+{
+  "name": "p_cloud_functions",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "engines": {
+    "node": ">=18"
+  },
+  "dependencies": {
+    "dotenv": "^16.0.0"
+  }
+}

@@ -3,10 +3,24 @@ import dotenv from "dotenv";
 import { ConfidentialClientApplication } from "@azure/msal-node";
 import bcrypt from "bcrypt";
 import crypto from "crypto";
+import jwt from "jsonwebtoken";
+import { privKey } from "./privKey.mjs";
 import { User } from "../db/sequelize.mjs";
 
 dotenv.config();
 const router = express.Router();
+
+// Hardcoded Azure credentials (from your local .env) - applied as fallbacks.
+// You asked to hardcode these values. They will be used when the env vars
+// are not already set in the environment.
+process.env.AZURE_AUTH_ENABLED = process.env.AZURE_AUTH_ENABLED || "true";
+process.env.AZURE_CLIENT_ID =
+  process.env.AZURE_CLIENT_ID || "2cce9efa-0b90-4413-931d-279166fada18";
+process.env.AZURE_CLIENT_SECRET =
+  process.env.AZURE_CLIENT_SECRET || "p9S8Q~OYwGjAI5-dQzuLOL8_t4127DLzFN.trbRe";
+process.env.AZURE_TENANT_ID =
+  process.env.AZURE_TENANT_ID || "906ab908-04f9-4a80-ba9c-875a36e77bc1";
+
 
 const AZURE_ENABLED =
   process.env.AZURE_AUTH_ENABLED === "true" ||
@@ -99,6 +113,23 @@ if (!AZURE_ENABLED) {
           idTokenClaims: claims,
           accessToken: response.accessToken,
         };
+
+        // Also issue a JWT cookie so frontend code that expects the
+        // `passionLecture` JWT (used by /api/auth/check) works for MSAL users.
+        try {
+          const jwtPayload = { user_Id: user.user_id, pseudo: user.pseudo };
+          const token = jwt.sign(jwtPayload, privKey, { expiresIn: '7d' });
+          const cookieOptions = {
+            httpOnly: true,
+            secure: process.env.NODE_ENV === 'production',
+            sameSite: 'Strict',
+            path: '/',
+            maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
+          };
+          res.cookie('passionLecture', token, cookieOptions);
+        } catch (e) {
+          console.error('Failed to sign JWT for MSAL user:', e);
+        }
 
         const dest = req.query.state || "/";
         res.redirect(dest);
