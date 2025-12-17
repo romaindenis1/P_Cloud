@@ -1,5 +1,0 @@
-Paas: 
-
-- database ==> serveur de basse de donnée commun a la classe
-- serveur backend 
-- serveur frontend
