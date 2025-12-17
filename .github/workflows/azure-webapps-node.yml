@@ -10,17 +10,17 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      # 1️⃣ Checkout the repository
+      # Checkout the repository
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      # 2️⃣ Set up Node.js
+      # Set up Node.js
       - name: Set up Node.js
         uses: actions/setup-node@v4
         with:
           node-version: "18"
 
-      # 3️⃣ Install frontend dependencies and build Vue app
+      # Install frontend dependencies and build Vue app
       - name: Install frontend dependencies
         working-directory: ./code/frontend
         run: npm install
@@ -29,13 +29,13 @@ jobs:
         working-directory: ./code/frontend
         run: npm run build
 
-      # 4️⃣ Copy Vue build output into backend's public folder
+      # Copy Vue build output into backend's public folder
       - name: Copy frontend build into backend public folder
         run: |
           mkdir -p ./code/backend/src/public
           cp -r ./code/frontend/dist/* ./code/backend/src/public/
 
-      # 4.5️⃣ Create a .env for the backend from GitHub secrets
+      # 4.Create a .env for the backend from GitHub secrets
       - name: Create backend .env from secrets
         shell: bash
         run: |
@@ -77,12 +77,12 @@ jobs:
 
           echo ".env created (contents masked in logs)"
 
-      # 5️⃣ Install backend dependencies
+      # Install backend dependencies
       - name: Install backend dependencies
         working-directory: ./code/backend
         run: npm install
 
-      # 6️⃣ Deploy backend (with frontend inside) to Azure App Service
+      # Deploy backend to Azure App Service
       - name: Deploy app to Azure App Service
         uses: azure/webapps-deploy@v3
         with:
