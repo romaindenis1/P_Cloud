@@ -53,7 +53,11 @@ Pour ce projet, nous avons essayé de répartir au mieux les tâches entre nous.
 ### 4.2 Romain Schertenlieb
 - Import de codebase de base
 - Lecture de documentation
+- configuration AZURE 
+- identiter managée
 - MSAL
+- debut de la fonction
+- Presentation
 - Debuggage
 
 ## 5. MSAL
